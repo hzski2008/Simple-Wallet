@@ -57,14 +57,14 @@ public class WalletService implements IWalletService {
   private Double calculateBalance(Double balance, Event event) {
     Double amount = event.getAmount();
     Double result = balance;
-    if (EventType.purchase.equals(event.getEventType())) {
-      if(amount > balance) {
-        throw new WalletException(WalletException.INSUFFICIENT_BALANCE, " Balance = " + balance + " Amount to deduct = " + amount);
-      }
+    if (EventType.purchase.equals(event.getEventType())) {   
       result = balance - amount;
     } else if (EventType.profit.equals(event.getEventType())) {
       result = balance + amount;
     } 
+    if (result < 0) {
+      throw new WalletException(WalletException.INSUFFICIENT_BALANCE, " Balance = " + balance + " Amount to deduct = " + amount);
+    }
     return result; 
   }
   
