@@ -1,6 +1,6 @@
 # Simple-Wallet
 
-This is a Sping Boot application written in Java. In-memory database H2 is used to ease infra setup. The main API implementation is a http PUT method(/accounts/{id}) which can be used to deduct or add balance to a user account.
+This is a Sping Boot application written in Java. In-memory database H2 is used to ease infra setup and API testing. The main API implementation is a http PUT method(/accounts/{id}) which can be used to deduct or add amount to a user account balance.
 
 ## Building
 Open a terminal, go to project root directory and run `./mvnw clean install` or `./mvnw package`
