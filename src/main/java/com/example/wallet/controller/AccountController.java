@@ -38,17 +38,18 @@ public class AccountController {
   @Autowired
   private IWalletService walletService;
 
-  @Operation(summary = "Update user account balance by user ID", description = "Returns updated user account info", tags = { "wallet" })
+  @Operation(summary = "Update user account balance by user ID", description = "If eventType is 'purchase', deduct amount from user's balance. "
+    + "If eventType is 'profit', add amount to user's balance. Other than those, returns invalid request error. "
+    + "When success, returns updated user Account object in Json", tags = { "wallet" })
   @ApiResponses(value = {
-  @ApiResponse(responseCode = "200", description = "successful operation",
-  content = @Content(schema = @Schema(implementation = Account.class))),
-  @ApiResponse(responseCode = "404", description = "User account not found"),
-  @ApiResponse(responseCode = "500", description = "Insufficient balance etc"),    
-  @ApiResponse(responseCode = "400", description = "Transaction info contains invalid or missing field") })
+    @ApiResponse(responseCode = "200", description = "successful operation",
+      content = @Content(schema = @Schema(implementation = Account.class))),
+    @ApiResponse(responseCode = "404", description = "User account not found"),
+    @ApiResponse(responseCode = "500", description = "Insufficient balance etc"),    
+    @ApiResponse(responseCode = "400", description = "Transaction info contains invalid or missing field")})
   @PutMapping("/accounts/{id}")
-  public Account updateBalance(@PathVariable(value = "id", required = true) Long accountId, @Valid @RequestBody Event event) {  
-    Account account = walletService.findUserById(accountId)
-      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Id = " + accountId + " not found"));
+  public Account updateBalance(@PathVariable(value = "id", required = true) Long accountId, @Valid @RequestBody Event event) {
+    Account account = getAccountById(accountId);
 
     // Check if same request has been processed
     if (walletService.findTransactionById(event.getEventId()).isPresent()) {
@@ -56,7 +57,7 @@ public class AccountController {
       return account;
     }
 
-    Account result = account;
+    Account result;
     try {
       result = walletService.updateUserAndLog(account, event);
     } catch (WalletException ex) {
@@ -69,6 +70,16 @@ public class AccountController {
     return result;
   }
   
+  @Operation(summary = "Get user account by user ID", description = "Returns user Account object in Json", tags = {"wallet"})
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "successful operation"),
+    @ApiResponse(responseCode = "404", description = "User account not found")})
+  @GetMapping("/accounts/{id}")
+  public Account getAccountById(@PathVariable(value = "id") Long accountId) {
+    return walletService.findUserById(accountId)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Id = " + accountId + " not found"));
+  }
+  
   /**
    * 
    * The below api are simply implemented just to facilitate the API testing of updateBalance API
@@ -79,12 +90,6 @@ public class AccountController {
     return walletService.findAllUsers();
   }
 
-  @GetMapping("/accounts/{id}")
-  public Account getAccountById(@PathVariable(value = "id") Long accountId) {
-    return walletService.findUserById(accountId)
-      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Id = " + accountId + " not found"));
-  }
-
   @PostMapping("/accounts/new")
   public Account createAccount(@Valid @RequestBody Account account) {
     return walletService.saveUser(account);
@@ -92,9 +97,7 @@ public class AccountController {
 
   @DeleteMapping("/accounts/{id}")
   public ResponseEntity<?> deleteAccount(@PathVariable(value = "id") Long accountId) {
-    Account account = walletService.findUserById(accountId)
-      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Id = " + accountId + " not found"));
-
+    Account account = getAccountById(accountId);
     walletService.deleteUser(account);
     return ResponseEntity.ok().build();
   }

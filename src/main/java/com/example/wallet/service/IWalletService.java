@@ -2,7 +2,6 @@ package com.example.wallet.service;
 
 import com.example.wallet.model.Account;
 import com.example.wallet.model.Event;
-import java.util.List;
 import java.util.Optional;
 
 public interface IWalletService {

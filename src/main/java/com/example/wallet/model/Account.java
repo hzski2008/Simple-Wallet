@@ -14,7 +14,6 @@ import javax.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "accounts")
-//@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Account implements Serializable {
   @Schema(description = "Unique identifier of the user account.", 
     example = "1", required = true)  

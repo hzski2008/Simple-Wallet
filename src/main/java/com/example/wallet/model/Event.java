@@ -61,7 +61,7 @@ public class Event implements Serializable {
     this.timestamp = timeStamp;
   }
 
-  // copy contructor
+  // copy constructor
   public Event(Event that) {
     this(that.getEventId(), that.getUserId(), that.getEventType(), that.getAmount(), that.getTimestamp());
   }

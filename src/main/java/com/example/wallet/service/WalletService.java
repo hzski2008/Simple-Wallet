@@ -6,15 +6,12 @@ import com.example.wallet.model.Account;
 import com.example.wallet.model.Event;
 import com.example.wallet.repository.AccountRepository;
 import com.example.wallet.repository.EventRepository;
-import java.sql.Timestamp;
 import java.util.Optional;
-import javax.persistence.OptimisticLockException;
+//import javax.persistence.OptimisticLockException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -25,11 +22,9 @@ public class WalletService implements IWalletService {
   @Autowired
   private AccountRepository accountRepository;
   @Autowired EventRepository eventRepository;
-
-  //@Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+  
   @Override
   public Optional<Account> findUserById(Long id) {
-     // accountRepository.flush();
     return accountRepository.findById(id);
   }
 
@@ -58,34 +53,37 @@ public class WalletService implements IWalletService {
     return eventRepository.save(event);
   }
 
-  @Override
-  //@Transactional
-  public Account updateUserAndLog(Account account,  Event event) {
-    Double amount = event.getAmount();
   
-    Account accountCopy = new Account(account); // make a clone of account before updating it
-    Double balance = account.getBalance();
-
+  private Double calculateBalance(Double balance, Event event) {
+    Double amount = event.getAmount();
+    Double result = balance;
     if (EventType.purchase.equals(event.getEventType())) {
       if(amount > balance) {
         throw new WalletException(WalletException.INSUFFICIENT_BALANCE, " Balance = " + balance + " Amount to deduct = " + amount);
       }
-      account.setBalance(balance - amount);
+      result = balance - amount;
     } else if (EventType.profit.equals(event.getEventType())) {
-      account.setBalance(balance + amount);
-    }
+      result = balance + amount;
+    } 
+    return result; 
+  }
+  
+  @Override
+  //@Transactional
+  public Account updateUserAndLog(Account account,  Event event) {      
+    Double calculatedBalance = calculateBalance(account.getBalance(), event);
+    account.setBalance(calculatedBalance);
 
-    Account updatedAccount = accountCopy;
-    
+    Account updatedAccount;    
     try {
       updatedAccount = accountRepository.saveAndFlush(account);
     } catch (Exception e) { // saving could fail in case consurrency or account copy becomes obsolete  
       log.error("OptimisticLockException received! ", e);
-      //Thread.sleep(1000);
-      // when saving fails, need to retrieve the balance from db
+      // when saving fails, need to retrieve the fresh balance from db again
       Account user = this.findUserById(account.getId()).get();
-      user.setBalance(user.getBalance() + amount);
-      updatedAccount = accountRepository.saveAndFlush(user); // retrying
+      calculatedBalance = calculateBalance(user.getBalance(), event);
+      user.setBalance(calculatedBalance);
+      updatedAccount = accountRepository.saveAndFlush(user); // retrying saving
     }
     log.info("Saved to Account table: " + account);
 
