@@ -1,6 +1,6 @@
 # Simple-Wallet
 
-This is a Sping Boot application written in Java. In-memory database H2 is used to ease infra setup. The main API implementation is a http PUT method called updateBalance() which can be used to deduct or add balance to a user account.
+This is a Sping Boot application written in Java. In-memory database H2 is used to ease infra setup. The main API implementation is a http PUT method(/accounts/{id}) which can be used to deduct or add balance to a user account.
 
 ## Building
 Open a terminal, go to project root directory and run `./mvnw clean install` or `./mvnw package`
@@ -14,8 +14,9 @@ All the tests are in WalletApiTest.java. It is API test/integration test. So you
 - Run `./mvnw -Dtest=WalletApiTest test`
 
 ## REST API Documentation
-The OpenAPI/Swagger is used to generate API documentation. When running the application, open url at:
-https://localhost:8443/swagger-ui/ or http://localhost:8080/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config
+The OpenAPI/Swagger is used to generate API documentation. When running the application, open url at:  
+https://localhost:8443/swagger-ui/  
+or http://localhost:8080/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config  
 where you can view documentation and try out the api manually.
 
 
