@@ -14,7 +14,7 @@ All the tests are in WalletApiTest.java. It is API test/integration test. So you
 - Run `./mvnw -Dtest=WalletApiTest test`
 
 ## REST API Documentation
-The OpenAPI/Swagger is used to generate API documentation. When running the application, open url at:  
+The OpenAPI/Swagger is used to generate API documentation. After the application is started, open url at:  
 https://localhost:8443/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config  
 or   
 http://localhost:8080/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config  
