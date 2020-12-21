@@ -18,6 +18,6 @@ The OpenAPI/Swagger is used to generate API documentation. After the application
 https://localhost:8443/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config  
 or   
 http://localhost:8080/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config  
-where you can view documentation and try out the api manually.
+where you can view documentation and try out the api.
 
 

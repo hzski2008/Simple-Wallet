@@ -4,6 +4,7 @@ import com.example.wallet.commontypes.EventType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -43,7 +44,7 @@ public class Event implements Serializable {
     example = "100.0", required = true)
   @NotNull(message = "amount can not be empty")
   @DecimalMin(value = "0.0", inclusive = false, message = "amount must be positive")
-  private Double amount;
+  private BigDecimal amount;
   
   @Schema(description = "Transaction timestamp. It should be sent from client.", 
     example = "2020-12-20T16:41:07.438Z", required = true)
@@ -53,7 +54,7 @@ public class Event implements Serializable {
 
   protected Event() {}
 
-  public Event(Long eventId, Long userId, EventType eventType, Double amount, Date timeStamp) {
+  public Event(Long eventId, Long userId, EventType eventType, BigDecimal amount, Date timeStamp) {
     this.eventId = eventId;
     this.userId = userId;
     this.eventType = eventType;
@@ -96,11 +97,11 @@ public class Event implements Serializable {
     this.eventId = eventId;
   }
 
-  public Double getAmount() {
+  public BigDecimal getAmount() {
     return amount;
   }
 
-  public void setAmount(Double amount) {
+  public void setAmount(BigDecimal amount) {
     this.amount = amount;
   }
 

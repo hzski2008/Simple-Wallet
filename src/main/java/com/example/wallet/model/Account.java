@@ -2,6 +2,7 @@ package com.example.wallet.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -29,7 +30,7 @@ public class Account implements Serializable {
   @Schema(description = "Account balance. Must be 0 or a positive number", 
     example = "200.55", required = true)
   @DecimalMin(value = "0.0", inclusive = true, message = "amount can not be negative")
-  private Double balance;
+  private BigDecimal balance;
 
   @Schema(description = "Optimistic lock for concurrency")
   @Version
@@ -37,7 +38,7 @@ public class Account implements Serializable {
 
   protected Account() {}
 
-  public Account(String name, Double balance) {
+  public Account(String name, BigDecimal balance) {
     this.name = name;
     this.balance = balance;
   }
@@ -69,11 +70,11 @@ public class Account implements Serializable {
     this.name = name;
   }
 
-  public Double getBalance() {
+  public BigDecimal getBalance() {
     return balance;
   }
 
-  public void setBalance(Double balance) {
+  public void setBalance(BigDecimal balance) {
     this.balance = balance;
   }
 

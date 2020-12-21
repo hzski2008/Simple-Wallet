@@ -7,6 +7,7 @@ import com.jayway.restassured.RestAssured;
 import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,7 @@ public class WalletApiTest {
   
   private Map<String, String> eventToMap(Event event) {
     Map<String, String> map = Map.of("eventId",String.valueOf(event.getEventId()), "eventType", String.valueOf(event.getEventType()), 
-      "userId", String.valueOf(event.getUserId()),"amount", String.valueOf(event.getAmount()), "timestamp", "2020-12-20T16:41:07"); 
+      "userId", String.valueOf(event.getUserId()),"amount", event.getAmount().toString(), "timestamp", "2020-12-20T16:41:07"); 
       return map;
   }
 
@@ -77,9 +78,9 @@ public class WalletApiTest {
   
   @Test
   public void testDeductBalanceOkCase() {    
-    Account account = new Account("John", 100.0);
+    Account account = new Account("John", new BigDecimal(100.0));
     int id = createUser(account);
-    Event event = new Event(Long.valueOf(generateRandomId()),Long.valueOf(id), EventType.purchase, 10.0, null);
+    Event event = new Event(Long.valueOf(generateRandomId()),Long.valueOf(id), EventType.purchase, new BigDecimal(10.0), null);
     
     given().contentType("application/json")
       .body(eventToMap(event)).when().put("accounts/" + id).then()
@@ -90,11 +91,11 @@ public class WalletApiTest {
   
   @Test
   public void testAddBalanceOkCase() {
-    Account account = new Account("Rachel", 100.0);
+    Account account = new Account("Rachel", new BigDecimal(100.0));
     int id = createUser(account);
     
-    Event event = new Event(Long.valueOf(generateRandomId()),Long.valueOf(id), EventType.profit, 300.0, null);
-        
+    Event event = new Event(Long.valueOf(generateRandomId()),Long.valueOf(id), EventType.profit, new BigDecimal(300.0), null);
+      Map<String, String> ss = eventToMap(event);   
     given().contentType("application/json")
       .body(eventToMap(event)).when().put("accounts/" + id).then()
       .statusCode(200).body("balance", equalTo(400f));
@@ -104,9 +105,9 @@ public class WalletApiTest {
 
   @Test
   public void testDuplicateRequestDoNotUpdateDB() {
-    Account account = new Account("Rachel", 100.0);
+    Account account = new Account("Rachel", new BigDecimal(100.0));
     int id = createUser(account);   
-    Event event = new Event(Long.valueOf(generateRandomId()),Long.valueOf(id), EventType.profit, 300.0, null);
+    Event event = new Event(Long.valueOf(generateRandomId()),Long.valueOf(id), EventType.profit, new BigDecimal(300.0), null);
     
     given().contentType("application/json")
       .body(eventToMap(event)).when().put("accounts/" + id).then()
@@ -119,7 +120,7 @@ public class WalletApiTest {
      
     // the 3rd time send the req with a new transaction id
     event.setEventId(Long.valueOf(generateRandomId()));
-    event.setAmount(500.0);
+    event.setAmount(new BigDecimal(500.0));
     given().contentType("application/json")
       .body(eventToMap(event)).when().put("accounts/" + id).then()
       .statusCode(200).body("balance", equalTo(900f));
@@ -130,7 +131,7 @@ public class WalletApiTest {
   @Test
   public void testNotFoundError() {
     Long nonExistingUserId = Long.valueOf(generateRandomId());
-    Event event = new Event(Long.valueOf(generateRandomId()), nonExistingUserId, EventType.profit, 300.0, null);
+    Event event = new Event(Long.valueOf(generateRandomId()), nonExistingUserId, EventType.profit, new BigDecimal(300.0), null);
     
     given().contentType("application/json")
       .body(eventToMap(event)).when().put("accounts/" + String.valueOf(nonExistingUserId)).then()
@@ -140,36 +141,37 @@ public class WalletApiTest {
   @Test
   public void testInsufficientBalanceError() {      
     // create new user with balance 100
-    Account account = new Account("Rachel", 100.0);
+    Account account = new Account("Rachel", new BigDecimal(100.0));
     int id = createUser(account);
-    Event event = new Event(Long.valueOf(generateRandomId()),Long.valueOf(id), EventType.purchase, 100.0, null);
+    Event event = new Event(Long.valueOf(generateRandomId()),Long.valueOf(id), EventType.purchase, new BigDecimal(100.0), null);
      
     given().contentType("application/json")
       .body(eventToMap(event)).when().put("accounts/" + id).then()
       .statusCode(200).body("balance", equalTo(0f));
     
-    event.setAmount(1.0);
+    event.setAmount(new BigDecimal(1.0));
     event.setEventId(Long.valueOf(generateRandomId()));
     
     given().contentType("application/json")
       .body(eventToMap(event)).when().put("accounts/" + id).then()
       .statusCode(500).body("message", containsString("Insufficient balance"));
+    deleteUser(id);
   }
    
   @Test
   public void testBadRequestError() {
     // create new user with balance 100
-    Account account = new Account("Rachel", 100.0);
+    Account account = new Account("Rachel", new BigDecimal(100.0));
     int id = createUser(account);
  
     // when amount is negative number
-    Event event = new Event(Long.valueOf(generateRandomId()),Long.valueOf(id), EventType.profit, -1.0, null);
+    Event event = new Event(Long.valueOf(generateRandomId()),Long.valueOf(id), EventType.profit, new BigDecimal(-1.0), null);
     given().contentType("application/json")
       .body(eventToMap(event)).when().put("accounts/" + id).then()
       .statusCode(400).body("error", equalTo("BAD_REQUEST")).body("errorMessage", containsString("amount must be positive"));
     
     // when event id is not present in request
-    Event event2 = new Event(null,Long.valueOf(id), EventType.profit, 100.0, null);
+    Event event2 = new Event(null,Long.valueOf(id), EventType.profit, new BigDecimal(100.0), null);
      given().contentType("application/json")
      .body(eventToMap(event2)).when().put("accounts/" + id).then()
      .statusCode(400).body("error", equalTo("BAD_REQUEST")).body("errorMessage", containsString("eventId is mandatory"));
@@ -179,9 +181,11 @@ public class WalletApiTest {
      given().contentType("application/json")
      .body(reqInvalid).when().put("accounts/" + id).then()
      .statusCode(400).body("error", equalTo("BAD_REQUEST")).body("errorMessage", containsString("eventType is mandatory"));
+     
+     deleteUser(id);
   }
   
-  private Double addBalance(int userId, double amount) {      
+  private BigDecimal addBalance(int userId, BigDecimal amount) {      
     Long uid = Long.valueOf(userId);
     Long eventId = Long.valueOf(generateRandomId());
     Event event = new Event( eventId,uid, EventType.profit, amount, null);
@@ -192,16 +196,16 @@ public class WalletApiTest {
       .extract().response(); 
       
     JsonPath jsonPathEvaluator = res.jsonPath();
-    double value = ((Number)jsonPathEvaluator.get("balance")).doubleValue();
+    BigDecimal value = new BigDecimal(((Number)jsonPathEvaluator.get("balance")).toString());
     return value;
   }
   
-  private double getBalance(int userId) {
+  private BigDecimal getBalance(int userId) {
     Response res = given().when().get("accounts/" + userId).then()
       .statusCode(200).extract().response(); 
       
     JsonPath jsonPathEvaluator = res.jsonPath();
-    double value = ((Number)jsonPathEvaluator.get("balance")).doubleValue();
+    BigDecimal value = new BigDecimal (((Number)jsonPathEvaluator.get("balance")).toString());
     return value;
   }
   
@@ -209,14 +213,14 @@ public class WalletApiTest {
   @Test
   public void testUpdateBalanceWithParalleExecution() throws Exception {
     // create new user with balance 100
-    Account account = new Account("Rachel", 100.0);
+    Account account = new Account("Rachel", new BigDecimal(100.0));
     int id = createUser(account);
    
     ExecutorService executor = Executors.newCachedThreadPool();
-    List<Callable<Double>> callables = Arrays.asList(
-      () -> addBalance(id, 100),
-      () -> addBalance(id, 200),
-      () -> addBalance(id, 300));
+    List<Callable<BigDecimal>> callables = Arrays.asList(
+      () -> addBalance(id, new BigDecimal(100)),
+      () -> addBalance(id, new BigDecimal(200)),
+      () -> addBalance(id, new BigDecimal(300)));
     
     executor.invokeAll(callables)      
       .stream()
@@ -230,7 +234,11 @@ public class WalletApiTest {
       })
       .forEach(System.out::println); 
     
-    double result = getBalance(id);
-    Assert.assertEquals(700, (int)result);
+    executor.shutdown();
+    
+    BigDecimal result = getBalance(id);
+    
+    Assert.assertEquals(700, result.intValue());
+    deleteUser(id);
   }
 }

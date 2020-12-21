@@ -3,6 +3,7 @@ package com.example.Wallet;
 import com.example.wallet.controller.AccountController;
 import com.example.wallet.model.Account;
 import com.example.wallet.service.WalletService;
+import java.math.BigDecimal;
 import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -24,7 +25,7 @@ public class AccountControllerTest {
  
   @Test
   public void shouldReturnAllAccounts() throws Exception {
-    Account account = new Account("John", 100.0);
+    Account account = new Account("John", new BigDecimal(100.0));
         
     List<Account> list = List.of(account);
     when(walletService.findAllUsers()).thenReturn(list);

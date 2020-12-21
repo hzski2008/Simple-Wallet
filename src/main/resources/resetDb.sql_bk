@@ -1,0 +1,2 @@
+truncate table events;
+truncate table accounts;

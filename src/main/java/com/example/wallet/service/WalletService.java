@@ -6,6 +6,8 @@ import com.example.wallet.model.Account;
 import com.example.wallet.model.Event;
 import com.example.wallet.repository.AccountRepository;
 import com.example.wallet.repository.EventRepository;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Optional;
 //import javax.persistence.OptimisticLockException;
 import org.slf4j.Logger;
@@ -54,15 +56,17 @@ public class WalletService implements IWalletService {
   }
 
   
-  private Double calculateBalance(Double balance, Event event) {
-    Double amount = event.getAmount();
-    Double result = balance;
+  private BigDecimal calculateBalance(BigDecimal balance, Event event) {
+    BigDecimal amount = event.getAmount();
+    BigDecimal result = balance;
+
     if (EventType.purchase.equals(event.getEventType())) {   
-      result = balance - amount;
+      result = balance.subtract(amount);
     } else if (EventType.profit.equals(event.getEventType())) {
-      result = balance + amount;
-    } 
-    if (result < 0) {
+      result = balance.add(amount);
+    }     
+    result = result.setScale(2, RoundingMode.HALF_EVEN);
+    if (result.compareTo(BigDecimal.ZERO) < 0) {
       throw new WalletException(WalletException.INSUFFICIENT_BALANCE, " Balance = " + balance + " Amount to deduct = " + amount);
     }
     return result; 
@@ -71,7 +75,7 @@ public class WalletService implements IWalletService {
   @Override
   //@Transactional
   public Account updateUserAndLog(Account account,  Event event) {      
-    Double calculatedBalance = calculateBalance(account.getBalance(), event);
+    BigDecimal calculatedBalance = calculateBalance(account.getBalance(), event);
     account.setBalance(calculatedBalance);
 
     Account updatedAccount;    
