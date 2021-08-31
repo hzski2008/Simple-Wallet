@@ -8,31 +8,31 @@ In this context, a game account refers to a server that provides an HTTP API to 
  
 #### Req 1. Design and document the HTTP interface between the game engine and the game account.
 
-When you charge a game, the game engine transmits to the game account the unique identifier of the purchase transaction, the unique identifier of the player and the amount. In response, the game account forwards to the game engine the remaining balance of the player’s game account.
+- When you charge a game, the game engine transmits to the game account the unique identifier of the purchase transaction, the unique identifier of the player and the amount. In response, the game account forwards to the game engine the remaining balance of the player’s game account.
 
-If the game round is a winning game, the game engine transmits to the game account the unique identifier of the winning event, the unique identifier of the player and the winning amount. In response, the game account forwards the new balance of the player’s game account to the game engine.
+- If the game round is a winning game, the game engine transmits to the game account the unique identifier of the winning event, the unique identifier of the player and the winning amount. In response, the game account forwards the new balance of the player’s game account to the game engine.
 
-These HTTP APIs are idempotent.
+- These HTTP APIs are idempotent.
  
 #### Req 2. Design and implement a database for the game account
 
 Information to be saved about players:
-* > The unique identifier of the player
-* > Name
-* > Game account balance
-* > Game event information:
-* > Timestamp
-* > The unique identifier of the player
-* > Unique identifier of the event
-* > Type of transaction (purchase or profit)Amount
+* The unique identifier of the player
+* Name
+* Game account balance
+* Game event information:
+* Timestamp
+* The unique identifier of the player
+* Unique identifier of the event
+* Type of transaction (purchase or profit)Amount
 
 #### Req 3. Implement a game account
 
-When processing a game purchase, the game engine debits the purchase amount from the player’s game account. If the player wins, the game engine pays them into the game account.
+- When processing a game purchase, the game engine debits the purchase amount from the player’s game account. If the player wins, the game engine pays them into the game account.
 
-If the game account balance is not sufficient for the purchase, the system will return an error to the game engine.
+- If the game account balance is not sufficient for the purchase, the system will return an error to the game engine.
 
-Traffic between the game engine and the game account must be encrypted.
+- Traffic between the game engine and the game account must be encrypted.
  
 #### Req 4. Write tests for the system
 
