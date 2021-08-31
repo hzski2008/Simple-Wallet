@@ -6,7 +6,7 @@ This is a Sping Boot application written in Java. In-memory database H2 is used 
 Implement a simple integration between the game engine and the game account (Wallet) that allows you to buy games and pay out winnings.
 In this context, a game account refers to a server that provides an HTTP API to game engines and manages customers’ gaming funds. The game engine does not need to be implemented for this project.
  
-1. Design and document the HTTP interface between the game engine and the game account.
+### 1. Design and document the HTTP interface between the game engine and the game account.
 
 When you charge a game, the game engine transmits to the game account the unique identifier of the purchase transaction, the unique identifier of the player and the amount. In response, the game account forwards to the game engine the remaining balance of the player’s game account.
 
@@ -14,7 +14,7 @@ If the game round is a winning game, the game engine transmits to the game accou
 
 These HTTP APIs are idempotent.
  
-2. Design and implement a database for the game account
+### 2. Design and implement a database for the game account
 
 Information to be saved about players:
 * The unique identifier of the player
@@ -26,7 +26,7 @@ Information to be saved about players:
 * Unique identifier of the event
 * Type of transaction (purchase or profit)Amount
 
-3. Implement a game account
+### 3. Implement a game account
 
 When processing a game purchase, the game engine debits the purchase amount from the player’s game account. If the player wins, the game engine pays them into the game account.
 
@@ -34,9 +34,9 @@ If the game account balance is not sufficient for the purchase, the system will 
 
 Traffic between the game engine and the game account must be encrypted.
  
-4. Write tests for the system
+### 4. Write tests for the system
 
-5. Write instructions for running the game engine and tests
+### 5. Write instructions for running the game engine and tests
  
 ## Building
 Open a terminal, go to project root directory and run `./mvnw clean install` or `./mvnw package`
