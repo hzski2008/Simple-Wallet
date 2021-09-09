@@ -9,7 +9,6 @@ import com.example.wallet.repository.EventRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Optional;
-//import javax.persistence.OptimisticLockException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +72,7 @@ public class WalletService implements IWalletService {
   
   @Override
   public synchronized Account updateUserAndLog(Long accountId,  Event event) {
-    Optional<Account> accountOptional = accountRepository.findById(accountId);
+    Optional<Account> accountOptional = findUserById(accountId);
     
     if (accountOptional.isEmpty()) {
       throw new WalletException(WalletException.NOT_FOUND, "Id = " + accountId + " not found");
