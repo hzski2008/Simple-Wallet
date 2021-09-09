@@ -49,20 +49,14 @@ public class AccountController {
     @ApiResponse(responseCode = "400", description = "Transaction info contains invalid or missing field")})
   @PutMapping("/accounts/{id}")
   public Account updateBalance(@PathVariable(value = "id", required = true) Long accountId, @Valid @RequestBody Event event) {
-    Account account = getAccountById(accountId);
-
-    // Check if same request has been processed
-    if (walletService.findTransactionById(event.getEventId()).isPresent()) {
-      log.info("Ignore the duplicate request, transactionI id: " +event.getEventId());
-      return account;
-    }
-
     Account result;
     try {
-      result = walletService.updateUserAndLog(account, event);
+      result = walletService.updateUserAndLog(accountId, event);
     } catch (WalletException ex) {
       if (ex.getErrorCode() == WalletException.INSUFFICIENT_BALANCE) {
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+      } else if (ex.getErrorCode() == WalletException.NOT_FOUND){
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, ex.getMessage());
       } else {
         throw ex;
       }

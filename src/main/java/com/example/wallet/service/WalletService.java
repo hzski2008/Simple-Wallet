@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public class WalletService implements IWalletService {
 
@@ -73,26 +72,38 @@ public class WalletService implements IWalletService {
   }
   
   @Override
-  //@Transactional
-  public Account updateUserAndLog(Account account,  Event event) {      
+  public synchronized Account updateUserAndLog(Long accountId,  Event event) {
+    Optional<Account> accountOptional = accountRepository.findById(accountId);
+    
+    if (accountOptional.isEmpty()) {
+      throw new WalletException(WalletException.NOT_FOUND, "Id = " + accountId + " not found");
+    }
+    Account account = accountOptional.get();
+  
+    // Check if same request has been processed
+    if (findTransactionById(event.getEventId()).isPresent()) {
+      log.info("Ignore the duplicate request, transactionI id: " +event.getEventId());
+      return account;
+    }
+    
     BigDecimal calculatedBalance = calculateBalance(account.getBalance(), event);
     account.setBalance(calculatedBalance);
 
-    Account updatedAccount;    
-    try {
-      updatedAccount = accountRepository.saveAndFlush(account);
-    } catch (Exception e) { // saving could fail in case consurrency or account copy becomes obsolete  
-      log.error("OptimisticLockException received! ", e);
-      // when saving fails, need to retrieve the fresh balance from db again
-      Account user = this.findUserById(account.getId()).get();
-      calculatedBalance = calculateBalance(user.getBalance(), event);
-      user.setBalance(calculatedBalance);
-      updatedAccount = accountRepository.saveAndFlush(user); // retrying saving
-    }
+    Account updatedAccount = accountRepository.saveAndFlush(account);
+//    try {
+//      updatedAccount = accountRepository.saveAndFlush(account);
+//    } catch (Exception e) { // saving could fail in case consurrency or account copy becomes obsolete  
+//      log.error("OptimisticLockException received! ", e);
+//      // when saving fails, need to retrieve the fresh balance from db again
+//      Account user = this.findUserById(account.getId()).get();
+//      calculatedBalance = calculateBalance(user.getBalance(), event);
+//      user.setBalance(calculatedBalance);
+//      updatedAccount = accountRepository.saveAndFlush(user); // retrying saving
+//    }
     log.info("Saved to Account table: " + account);
 
     // write event log to db
-    event.setUserId(account.getId());
+    event.setUserId(accountId);
     log.info("Save to Events table: " + eventRepository.save(event)); 
 
     return updatedAccount;

@@ -209,7 +209,6 @@ public class WalletApiTest {
     return value;
   }
   
-  //@Ignore
   @Test
   public void testUpdateBalanceWithParalleExecution() throws Exception {
     // create new user with balance 100

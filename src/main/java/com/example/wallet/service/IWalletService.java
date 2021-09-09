@@ -11,5 +11,5 @@ public interface IWalletService {
   void deleteUser(Account account);
   Optional<Event> findTransactionById(Long id);
   Event saveTransaction(Event event);
-  Account updateUserAndLog(Account account, Event event);
+  Account updateUserAndLog(Long accountId, Event event);
 }
