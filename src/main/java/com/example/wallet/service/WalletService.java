@@ -70,8 +70,16 @@ public class WalletService implements IWalletService {
     return result; 
   }
   
-  @Override
-  public synchronized Account updateUserAndLog(Long accountId,  Event event) {
+  @Override 
+  public Account updateUserAndLog(Long accountId, Event event) {
+    Account account = updateUser(accountId, event);
+    // write event log to db
+    event.setUserId(accountId);
+    log.info("Save to Events table: " + eventRepository.save(event));
+    return account;
+  }
+  
+  private synchronized Account updateUser(Long accountId,  Event event) {
     Account account = findUserById(accountId)
       .orElseThrow(() -> new WalletException(WalletException.NOT_FOUND, "Id = " + accountId + " not found"));
             
@@ -86,10 +94,6 @@ public class WalletService implements IWalletService {
 
     Account updatedAccount = accountRepository.saveAndFlush(account);
     log.info("Saved to Account table: " + account);
-
-    // write event log to db
-    event.setUserId(accountId);
-    log.info("Save to Events table: " + eventRepository.save(event)); 
 
     return updatedAccount;
   }

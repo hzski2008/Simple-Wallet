@@ -18,9 +18,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.Assert;
+import static org.hamcrest.MatcherAssert.assertThat;
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class WalletApiTest {
@@ -218,7 +218,7 @@ public class WalletApiTest {
     ExecutorService executor = Executors.newCachedThreadPool();
     List<Callable<BigDecimal>> callables = Arrays.asList(
       () -> addBalance(id, new BigDecimal(100)),
-      () -> addBalance(id, new BigDecimal(200)),
+      () -> addBalance(id, new BigDecimal(200.67)),
       () -> addBalance(id, new BigDecimal(300)));
     
     executor.invokeAll(callables)      
@@ -237,7 +237,7 @@ public class WalletApiTest {
     
     BigDecimal result = getBalance(id);
     
-    Assert.assertEquals(700, result.intValue());
+    assertThat(new BigDecimal("700.67"), Matchers.comparesEqualTo(result));
     deleteUser(id);
   }
 }
