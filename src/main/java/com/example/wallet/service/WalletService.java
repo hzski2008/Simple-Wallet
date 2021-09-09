@@ -90,16 +90,6 @@ public class WalletService implements IWalletService {
     account.setBalance(calculatedBalance);
 
     Account updatedAccount = accountRepository.saveAndFlush(account);
-//    try {
-//      updatedAccount = accountRepository.saveAndFlush(account);
-//    } catch (Exception e) { // saving could fail in case consurrency or account copy becomes obsolete  
-//      log.error("OptimisticLockException received! ", e);
-//      // when saving fails, need to retrieve the fresh balance from db again
-//      Account user = this.findUserById(account.getId()).get();
-//      calculatedBalance = calculateBalance(user.getBalance(), event);
-//      user.setBalance(calculatedBalance);
-//      updatedAccount = accountRepository.saveAndFlush(user); // retrying saving
-//    }
     log.info("Saved to Account table: " + account);
 
     // write event log to db
