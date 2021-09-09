@@ -72,13 +72,9 @@ public class WalletService implements IWalletService {
   
   @Override
   public synchronized Account updateUserAndLog(Long accountId,  Event event) {
-    Optional<Account> accountOptional = findUserById(accountId);
-    
-    if (accountOptional.isEmpty()) {
-      throw new WalletException(WalletException.NOT_FOUND, "Id = " + accountId + " not found");
-    }
-    Account account = accountOptional.get();
-  
+    Account account = findUserById(accountId)
+      .orElseThrow(() -> new WalletException(WalletException.NOT_FOUND, "Id = " + accountId + " not found"));
+            
     // Check if same request has been processed
     if (findTransactionById(event.getEventId()).isPresent()) {
       log.info("Ignore the duplicate request, transactionI id: " +event.getEventId());

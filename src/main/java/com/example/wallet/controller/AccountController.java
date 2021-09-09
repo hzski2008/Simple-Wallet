@@ -49,7 +49,7 @@ public class AccountController {
     @ApiResponse(responseCode = "400", description = "Transaction info contains invalid or missing field")})
   @PutMapping("/accounts/{id}")
   public Account updateBalance(@PathVariable(value = "id", required = true) Long accountId, @Valid @RequestBody Event event) {
-    Account result;
+    Account result; 
     try {
       result = walletService.updateUserAndLog(accountId, event);
     } catch (WalletException ex) {
